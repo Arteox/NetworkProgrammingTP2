@@ -70,28 +70,19 @@ public class WebServer {
 
                 if ("GET".equals(requestType)) {
                     doGet(URL, out);
+                } else if ("POST".equals(requestType)) {
+                    String body = readBody(in);
+                    doPost(URL, body, out);
+                } else if ("HEAD".equals(requestType)) {
+                    doHead(URL, out);
                 }
-                if ("POST".equals(requestType)) {
-                    String body = "";
-                    str = "dummy";
-                    //réécrire le while et récupérer autant de charactères que das content length
-                    while (!str.equals("")) {
-                        str = in.readLine();
-                        if (!str.equals("dummy") || !str.equals("")){
-                            body += str+"\n";
-                        }
-                        System.out.println("post body new line : " + str);
-                    }
-                    doPost(URL, body);
-                    out.println("HTTP/1.1 200 OK");
-                    out.println("Content-Type: text/html");
-                    out.println("Server: Bot");
-                    out.println("");
-                    out.println("status: 200");
+                else if ("PUT".equals(requestType)) {
+                    String body = readBody(in);
+                    doPut(URL, body, out);
                 }
-                if ("HEAD".equals(requestType)) ;
-                if ("PUT".equals(requestType)) ;
-                if ("DELETE".equals(requestType)) ;
+                if ("DELETE".equals(requestType)) {
+                    doDelete(URL, out);
+                };
                 out.flush();
                 remote.close();
             } catch (Exception e) {
@@ -101,11 +92,11 @@ public class WebServer {
     }
 
     public void doGet(String URL, PrintWriter out) throws IOException {
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Server: Bot");
-        out.println("");
         System.out.println(URL);
+        ArrayList<String> headers = createGetHeaders(URL);
+        for (String header : headers){
+            out.println(header);
+        }
         if ("/adder.html".equals(URL)) {
             for (String line : Files.readAllLines(Paths.get("ress/Adder.html"), StandardCharsets.UTF_8)) {
                 out.println(line);
@@ -115,15 +106,78 @@ public class WebServer {
             for (String line : postedData) {
                 out.println(line);
             }
+            if (postedData.size() == 0){
+                out.println("data empty");
+            }
         }
     }
 
-    public void doPost(String URL, String body) {
-        if (URL.equals("/data")){
+    public void doPost(String URL, String body, PrintWriter out) {
+        if (URL.equals("/data")) {
             //break pour chaque \n
             postedData.add("<H1>" + body + "</H1>");
-            System.out.println("data added :"+body);
+            System.out.println("data added :" + body);
         }
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: text/html");
+        out.println("Server: Bot");
+        out.println("");
+        out.println("status: 200");
+    }
+
+    public void doPut(String URL, String body, PrintWriter out) {
+        if (URL.equals("/data")) {
+            //break pour chaque \n
+            postedData.clear();
+            postedData.add("<H1>" + body + "</H1>");
+            System.out.println("data replaced :" + body);
+        }
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: text/html");
+        out.println("Server: Bot");
+        out.println("");
+        out.println("status: 200");
+    }
+    
+    public void doDelete(String URL, PrintWriter out) {
+        if (URL.equals("/data")){
+            postedData.clear();
+        }
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: text/html");
+        out.println("Server: Bot");
+        out.println("");
+        out.println("status: 200");
+    }
+    
+    public void doHead(String URL, PrintWriter out) {
+        ArrayList<String> headers = createGetHeaders(URL);
+        for (String header : headers){
+            out.println(header);
+        }
+    }
+    
+    private ArrayList<String> createGetHeaders(String URL){
+        ArrayList<String> headers = new ArrayList<>();
+        headers.add("HTTP/1.1 200 OK");
+        headers.add("Content-Type: text/html");
+        headers.add("Server: Bot");
+        headers.add("");
+        return headers;
+    }
+
+    private String readBody(BufferedReader in) throws IOException {
+        String body = "";
+        String str = "dummy";
+        //réécrire le while et récupérer autant de charactères que das content length
+        while (!str.equals("")) {
+            str = in.readLine();
+            if (!str.equals("dummy") || !str.equals("")) {
+                body += str + "<br>";
+            }
+            System.out.println("post body new line : " + str);
+        }
+        return body;
     }
 
     /**
