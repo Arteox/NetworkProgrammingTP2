@@ -89,7 +89,6 @@ public class WebServer {
     }
 
     public void doGet(String URL, PrintWriter out) throws IOException {
-        System.out.println(URL);
         ArrayList<String> headers = createGetHeaders(URL);
         for (String header : headers) {
             out.println(header);
@@ -97,7 +96,6 @@ public class WebServer {
         if ("/adder.html".equals(URL)) {
             for (String line : Files.readAllLines(Paths.get("doc/Adder.html"), StandardCharsets.UTF_8)) {
                 out.println(line);
-                System.out.println(line);
             }
         } else if ("/data".equals(URL)) {
             for (String line : postedData) {
@@ -112,6 +110,20 @@ public class WebServer {
             String newImage = "data:image/jpeg;base64,";
             newImage += Base64.getEncoder().encodeToString(fileContent);
             out.println("<img src=" + newImage + " />");
+        } else if ("/video".equals(URL)) {
+            /*File file = new File("doc/video.mp4");
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+            String newVideo = "data:video/mp4;base64,";
+            newVideo += Base64.getEncoder().encodeToString(fileContent);
+            out.println("<video src=" + newVideo + " />");*/
+        } else if ("/shortvideo".equals(URL)) {
+            File file = new File("doc/shortvideo.mp4");
+            byte[] fileContent = Files.readAllBytes(file.toPath());
+            String newVideo = "data:video/mp4;base64,";
+            newVideo += Base64.getEncoder().encodeToString(fileContent);
+            out.println("<video controls>\n"
+                    + "	<source type=\"video/mp4\" src="+newVideo+">\n"
+                    + "</video>");
         }
     }
 
@@ -161,8 +173,11 @@ public class WebServer {
     private ArrayList<String> createGetHeaders(String URL) {
         ArrayList<String> headers = new ArrayList<>();
         headers.add("HTTP/1.1 200 OK");
+        //headers.add("Content-Type: video/mp4");
         headers.add("Content-Type: text/html");
+        //headers.add("Content-Length: 995463");
         headers.add("Server: Bot");
+        headers.add("Accept-Ranges: bytes");
         headers.add("");
         return headers;
     }
