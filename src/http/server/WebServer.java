@@ -93,7 +93,7 @@ public class WebServer {
             out.println(header);
         }
         if ("/adder.html".equals(URL)) {
-            for (String line : Files.readAllLines(Paths.get("ress/Adder.html"), StandardCharsets.UTF_8)) {
+            for (String line : Files.readAllLines(Paths.get("doc/Adder.html"), StandardCharsets.UTF_8)) {
                 out.println(line);
                 System.out.println(line);
             }
