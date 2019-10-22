@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div>
+	<button type="button" onclick="bigger()">Bigger !</button>
+	<button type="button" onclick="smaller()">Smaller !</button>
+	<p id="shrug">\_(+_+)_/</p>
+</div>
+ 
+<script>
+function bigger() {
+	txt = document.getElementById('shrug');
+    style = window.getComputedStyle(txt, null).getPropertyValue('font-size');
+    currentSize = parseFloat(style);
+    txt.style.fontSize = (currentSize + 10) + 'px';
+}
+function smaller() {
+  txt = document.getElementById('shrug');
+    style = window.getComputedStyle(txt, null).getPropertyValue('font-size');
+    currentSize = parseFloat(style);
+    txt.style.fontSize = (currentSize - 10) + 'px';
+}
+</script>
+
+</body>
+</html>

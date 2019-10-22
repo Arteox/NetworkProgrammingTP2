@@ -99,6 +99,26 @@ public class WebServer {
                 sendHeaders(URL, out, "500");
                 System.err.println("Error: " + e);
             }
+        } else if (URL.equals("/multiplier.html")) {
+            try {
+                sendHeaders(URL, out, "200");
+                for (String line : Files.readAllLines(Paths.get("doc/Multiplier.html"), StandardCharsets.UTF_8)) {
+                    out.println(line);
+                }
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
+        } else if (URL.equals("/shrug.html")) {
+            try {
+                sendHeaders(URL, out, "200");
+                for (String line : Files.readAllLines(Paths.get("doc/shrug.html"), StandardCharsets.UTF_8)) {
+                    out.println(line);
+                }
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
         } else if ("/data".equals(URL)) {
             try {
                 sendHeaders(URL, out, "200");
@@ -153,7 +173,7 @@ public class WebServer {
                 sendHeaders(URL, out, "500");
                 System.err.println("Error: " + e);
             }
-        } else if ("/audio".equals(URL)){
+        } else if ("/audio".equals(URL)) {
             try {
                 File file = new File("doc/audio.mp3");
                 byte[] fileContent = Files.readAllBytes(file.toPath());
@@ -167,7 +187,7 @@ public class WebServer {
                 sendHeaders(URL, out, "500");
                 System.err.println("Error: " + e);
             }
-        } else if ("/ushio".equals(URL)){
+        } else if ("/ushio".equals(URL)) {
             try {
                 File file = new File("doc/ushio.mp3");
                 byte[] fileContent = Files.readAllBytes(file.toPath());
@@ -181,8 +201,7 @@ public class WebServer {
                 sendHeaders(URL, out, "500");
                 System.err.println("Error: " + e);
             }
-        }
-        else if ("/dango".equals(URL)){
+        } else if ("/dango".equals(URL)) {
             try {
                 File file = new File("doc/dango.mp3");
                 byte[] fileContent = Files.readAllBytes(file.toPath());
@@ -196,9 +215,7 @@ public class WebServer {
                 sendHeaders(URL, out, "500");
                 System.err.println("Error: " + e);
             }
-        }
-        
-        else {
+        } else {
             sendHeaders(URL, out, "404");
             out.println("<H1>Sorry, this page doesn't exist</H1>");
         }
@@ -265,16 +282,14 @@ public class WebServer {
         headers.add("");
         return headers;
     }
-    
-    private String createStatusMsg(String statusCode){
+
+    private String createStatusMsg(String statusCode) {
         String statusMessage = "";
-        if (statusCode.equals("200")){
+        if (statusCode.equals("200")) {
             statusMessage = "OK";
-        }
-        else if (statusCode.equals("404")){
+        } else if (statusCode.equals("404")) {
             statusMessage = "Not Found";
-        }
-        else if (statusCode.equals("500")){
+        } else if (statusCode.equals("500")) {
             statusMessage = "Internal Server Error";
         }
         return statusMessage;
