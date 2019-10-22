@@ -88,28 +88,43 @@ public class WebServer {
         out.flush();
     }
 
-    public void doGet(String URL, PrintWriter out) throws IOException {
-        ArrayList<String> headers = createGetHeaders(URL);
-        for (String header : headers) {
-            out.println(header);
-        }
+    public void doGet(String URL, PrintWriter out) {
         if ("/adder.html".equals(URL)) {
-            for (String line : Files.readAllLines(Paths.get("doc/Adder.html"), StandardCharsets.UTF_8)) {
-                out.println(line);
+            try {
+                sendHeaders(URL, out, "200");
+                for (String line : Files.readAllLines(Paths.get("doc/Adder.html"), StandardCharsets.UTF_8)) {
+                    out.println(line);
+                }
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
             }
         } else if ("/data".equals(URL)) {
-            for (String line : postedData) {
-                out.println(line);
-            }
-            if (postedData.isEmpty()) {
-                out.println("data empty");
+            try {
+                sendHeaders(URL, out, "200");
+                for (String line : postedData) {
+                    out.println(line);
+                }
+                if (postedData.isEmpty()) {
+                    out.println("data empty");
+                }
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
             }
         } else if ("/image".equals(URL)) {
-            File file = new File("doc/image.jpg");
-            byte[] fileContent = Files.readAllBytes(file.toPath());
-            String newImage = "data:image/jpeg;base64,";
-            newImage += Base64.getEncoder().encodeToString(fileContent);
-            out.println("<img src=" + newImage + " />");
+            try {
+                File file = new File("doc/image.jpg");
+                byte[] fileContent = Files.readAllBytes(file.toPath());
+                String newImage = "data:image/jpeg;base64,";
+                newImage += Base64.getEncoder().encodeToString(fileContent);
+
+                sendHeaders(URL, out, "200");
+                out.println("<img src=" + newImage + " />");
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
         } else if ("/video".equals(URL)) {
             /*File file = new File("doc/video.mp4");
             byte[] fileContent = Files.readAllBytes(file.toPath());
@@ -117,62 +132,78 @@ public class WebServer {
             newVideo += Base64.getEncoder().encodeToString(fileContent);
             out.println("<video src=" + newVideo + " />");*/
         } else if ("/shortvideo".equals(URL)) {
-            File file = new File("doc/shortvideo.mp4");
-            byte[] fileContent = Files.readAllBytes(file.toPath());
-            String newVideo = "data:video/mp4;base64,";
-            newVideo += Base64.getEncoder().encodeToString(fileContent);
-            out.println("<video controls>\n"
-                    + "	<source type=\"video/mp4\" src="+newVideo+">\n"
-                    + "</video>");
+            try {
+                File file = new File("doc/shortvideo.mp4");
+                byte[] fileContent = Files.readAllBytes(file.toPath());
+                String newVideo = "data:video/mp4;base64,";
+                newVideo += Base64.getEncoder().encodeToString(fileContent);
+                sendHeaders(URL, out, "200");
+                out.println("<video controls>\n"
+                        + "	<source type=\"video/mp4\" src=" + newVideo + ">\n"
+                        + "</video>");
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
+        } else {
+            sendHeaders(URL, out, "404");
+            out.println("<H1>Sorry, this page doesn't exist</H1>");
         }
     }
 
     public void doPost(String URL, String body, PrintWriter out) {
-        if (URL.equals("/data")) {
-            postedData.add("<H1>" + body + "</H1>");
-            System.out.println("data added :" + body);
+        try {
+            if (URL.equals("/data")) {
+                postedData.add("<H1>" + body + "</H1>");
+                System.out.println("data added :" + body);
+            }
+            sendHeaders(URL, out, "200");
+        } catch (Exception e) {
+            sendHeaders(URL, out, "500");
+            System.err.println("Error: " + e);
         }
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Server: Bot");
-        out.println("");
-        out.println("status: 200");
+
     }
 
     public void doPut(String URL, String body, PrintWriter out) {
-        if (URL.equals("/data")) {
-            postedData.clear();
-            postedData.add("<H1>" + body + "</H1>");
-            System.out.println("data replaced :" + body);
+        try {
+            if (URL.equals("/data")) {
+                postedData.clear();
+                postedData.add("<H1>" + body + "</H1>");
+                System.out.println("data replaced :" + body);
+            }
+            sendHeaders(URL, out, "200");
+        } catch (Exception e) {
+            sendHeaders(URL, out, "500");
+            System.err.println("Error: " + e);
         }
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Server: Bot");
-        out.println("");
-        out.println("status: 200");
     }
 
     public void doDelete(String URL, PrintWriter out) {
-        if (URL.equals("/data")) {
-            postedData.clear();
+        try {
+            if (URL.equals("/data")) {
+                postedData.clear();
+            }
+            sendHeaders(URL, out, "200");
+        } catch (Exception e) {
+            sendHeaders(URL, out, "500");
+            System.err.println("Error: " + e);
         }
-        out.println("HTTP/1.1 200 OK");
-        out.println("Content-Type: text/html");
-        out.println("Server: Bot");
-        out.println("");
-        out.println("status: 200");
     }
 
     public void doHead(String URL, PrintWriter out) {
-        ArrayList<String> headers = createGetHeaders(URL);
-        for (String header : headers) {
-            out.println(header);
+        try {
+            sendHeaders(URL, out, "200");
+        } catch (Exception e) {
+            sendHeaders(URL, out, "500");
+            System.err.println("Error: " + e);
         }
     }
 
-    private ArrayList<String> createGetHeaders(String URL) {
+    private ArrayList<String> createGetHeaders(String URL, String statusCode) {
         ArrayList<String> headers = new ArrayList<>();
-        headers.add("HTTP/1.1 200 OK");
+        String statusMessage = createStatusMsg(statusCode);
+        headers.add("HTTP/1.1 " + statusCode + " " + statusMessage);
         //headers.add("Content-Type: video/mp4");
         headers.add("Content-Type: text/html");
         //headers.add("Content-Length: 995463");
@@ -180,6 +211,27 @@ public class WebServer {
         headers.add("Accept-Ranges: bytes");
         headers.add("");
         return headers;
+    }
+    
+    private String createStatusMsg(String statusCode){
+        String statusMessage = "";
+        if (statusCode.equals("200")){
+            statusMessage = "OK";
+        }
+        else if (statusCode.equals("404")){
+            statusMessage = "Not Found";
+        }
+        else if (statusCode.equals("500")){
+            statusMessage = "Internal Server Error";
+        }
+        return statusMessage;
+    }
+
+    private void sendHeaders(String URL, PrintWriter out, String statusCode) {
+        ArrayList<String> headers = createGetHeaders(URL, statusCode);
+        for (String header : headers) {
+            out.println(header);
+        }
     }
 
     private String readBody(BufferedReader in, int bodyLength) throws IOException {
