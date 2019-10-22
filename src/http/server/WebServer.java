@@ -126,11 +126,19 @@ public class WebServer {
                 System.err.println("Error: " + e);
             }
         } else if ("/video".equals(URL)) {
-            /*File file = new File("doc/video.mp4");
-            byte[] fileContent = Files.readAllBytes(file.toPath());
-            String newVideo = "data:video/mp4;base64,";
-            newVideo += Base64.getEncoder().encodeToString(fileContent);
-            out.println("<video src=" + newVideo + " />");*/
+            try {
+                File file = new File("doc/video.mp4");
+                byte[] fileContent = Files.readAllBytes(file.toPath());
+                String newVideo = "data:video/mp4;base64,";
+                newVideo += Base64.getEncoder().encodeToString(fileContent);
+                sendHeaders(URL, out, "200");
+                out.println("<video controls>\n"
+                        + "	<source type=\"video/mp4\" src=" + newVideo + ">\n"
+                        + "</video>");
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
         } else if ("/shortvideo".equals(URL)) {
             try {
                 File file = new File("doc/shortvideo.mp4");
@@ -145,7 +153,52 @@ public class WebServer {
                 sendHeaders(URL, out, "500");
                 System.err.println("Error: " + e);
             }
-        } else {
+        } else if ("/audio".equals(URL)){
+            try {
+                File file = new File("doc/audio.mp3");
+                byte[] fileContent = Files.readAllBytes(file.toPath());
+                String newAudio = "data:audio/mpeg;base64,";
+                newAudio += Base64.getEncoder().encodeToString(fileContent);
+                sendHeaders(URL, out, "200");
+                out.println("<audio controls>\n"
+                        + "	<source type=\"audio/mpeg\" src=" + newAudio + ">\n"
+                        + "</audio>");
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
+        } else if ("/ushio".equals(URL)){
+            try {
+                File file = new File("doc/ushio.mp3");
+                byte[] fileContent = Files.readAllBytes(file.toPath());
+                String newAudio = "data:audio/mpeg;base64,";
+                newAudio += Base64.getEncoder().encodeToString(fileContent);
+                sendHeaders(URL, out, "200");
+                out.println("<audio controls>\n"
+                        + "	<source type=\"audio/mpeg\" src=" + newAudio + ">\n"
+                        + "</audio>");
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
+        }
+        else if ("/dango".equals(URL)){
+            try {
+                File file = new File("doc/dango.mp3");
+                byte[] fileContent = Files.readAllBytes(file.toPath());
+                String newAudio = "data:audio/mpeg;base64,";
+                newAudio += Base64.getEncoder().encodeToString(fileContent);
+                sendHeaders(URL, out, "200");
+                out.println("<audio controls>\n"
+                        + "	<source type=\"audio/mpeg\" src=" + newAudio + ">\n"
+                        + "</audio>");
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
+        }
+        
+        else {
             sendHeaders(URL, out, "404");
             out.println("<H1>Sorry, this page doesn't exist</H1>");
         }
