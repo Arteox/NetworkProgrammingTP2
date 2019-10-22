@@ -12,16 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-/**
- * Example program from Chapter 1 Programming Spiders, Bots and Aggregators in
- * Java Copyright 2001 by Jeff Heaton
- *
- * WebServer is a very simple web-server. Any request is responded with a very
- * simple web-page.
- *
- * @author Jeff Heaton
- * @version 1.0
- */
 public class WebServer {
 
     /**
@@ -35,46 +25,23 @@ public class WebServer {
         System.out.println("Webserver starting up on port 3000");
         System.out.println("(press ctrl-c to exit)");
         try {
-            // create the main server socket
             s = new ServerSocket(3000);
         } catch (Exception e) {
             System.out.println("Error: " + e);
             return;
         }
-
         System.out.println("Waiting for connection");
         for (;;) {
             try {
-                // wait for a connection
                 Socket remote = s.accept();
-                // remote is now the connected socket
+                
                 System.out.println("Connection, sending data.");
                 BufferedReader in = new BufferedReader(new InputStreamReader(remote.getInputStream()));
                 PrintWriter out = new PrintWriter(remote.getOutputStream());
 
-                // read the data sent. We basically ignore it,
-                // stop reading once a blank line is hit. This
-                // blank line signals the end of the client HTTP
-                // headers.
-                String str = ".";
-                String requestType = "";
-                String URL = "";
-                int contentLength = 0;
+                Headers headers = readHeaders(in);
 
-                //read headers
-                System.out.println("before reading headers");
-                while (!str.equals("")) {
-                    str = in.readLine();
-                    if (str.contains("HTTP")) {
-                        requestType = str.split(" ")[0];
-                        URL = str.split(" ")[1];
-                    } else if (str.contains("Content-Length")) {
-                        contentLength = Integer.parseInt(str.substring(16));
-                    }
-                    System.out.println("Html new line : " + str);
-                }
-
-                executeRequest(requestType, URL, contentLength, out, in);
+                executeRequest(headers, out, in);
 
                 remote.close();
             } catch (Exception e) {
@@ -83,20 +50,38 @@ public class WebServer {
         }
     }
 
-    public void executeRequest(String requestType, String URL, int contentLength, PrintWriter out, BufferedReader in) throws IOException {
-        if ("GET".equals(requestType)) {
-            doGet(URL, out);
-        } else if ("POST".equals(requestType)) {
-            String body = readBody(in, contentLength);
-            doPost(URL, body, out);
-        } else if ("HEAD".equals(requestType)) {
-            doHead(URL, out);
-        } else if ("PUT".equals(requestType)) {
-            String body = readBody(in, contentLength);
-            doPut(URL, body, out);
+    public Headers readHeaders(BufferedReader in) throws IOException {
+        String str = ".";
+        String requestType = "";
+        String URL = "";
+        int contentLength = 0;
+        while (!str.equals("")) {
+            str = in.readLine();
+            if (str.contains("HTTP")) {
+                requestType = str.split(" ")[0];
+                URL = str.split(" ")[1];
+            } else if (str.contains("Content-Length")) {
+                contentLength = Integer.parseInt(str.substring(16));
+            }
+            System.out.println("Html new line : " + str);
         }
-        if ("DELETE".equals(requestType)) {
-            doDelete(URL, out);
+        return new Headers(URL, requestType, contentLength);
+    }
+
+    public void executeRequest(Headers headers, PrintWriter out, BufferedReader in) throws IOException {
+        if ("GET".equals(headers.requestType)) {
+            doGet(headers.URL, out);
+        } else if ("POST".equals(headers.requestType)) {
+            String body = readBody(in, headers.contentLength);
+            doPost(headers.URL, body, out);
+        } else if ("HEAD".equals(headers.requestType)) {
+            doHead(headers.URL, out);
+        } else if ("PUT".equals(headers.requestType)) {
+            String body = readBody(in, headers.contentLength);
+            doPut(headers.URL, body, out);
+        }
+        if ("DELETE".equals(headers.requestType)) {
+            doDelete(headers.URL, out);
         }
         out.flush();
     }
