@@ -59,31 +59,23 @@ public class WebServer {
                 String str = ".";
                 String requestType = "";
                 String URL = "";
+                int contentLength = 0;
+
+                //read headers
+                System.out.println("before reading headers");
                 while (!str.equals("")) {
                     str = in.readLine();
                     if (str.contains("HTTP")) {
                         requestType = str.split(" ")[0];
                         URL = str.split(" ")[1];
+                    } else if (str.contains("Content-Length")) {
+                        contentLength = Integer.parseInt(str.substring(16));
                     }
                     System.out.println("Html new line : " + str);
                 }
 
-                if ("GET".equals(requestType)) {
-                    doGet(URL, out);
-                } else if ("POST".equals(requestType)) {
-                    String body = readBody(in);
-                    doPost(URL, body, out);
-                } else if ("HEAD".equals(requestType)) {
-                    doHead(URL, out);
-                }
-                else if ("PUT".equals(requestType)) {
-                    String body = readBody(in);
-                    doPut(URL, body, out);
-                }
-                if ("DELETE".equals(requestType)) {
-                    doDelete(URL, out);
-                };
-                out.flush();
+                executeRequest(requestType, URL, contentLength, out, in);
+
                 remote.close();
             } catch (Exception e) {
                 System.out.println("Error: " + e);
@@ -91,10 +83,28 @@ public class WebServer {
         }
     }
 
+    public void executeRequest(String requestType, String URL, int contentLength, PrintWriter out, BufferedReader in) throws IOException {
+        if ("GET".equals(requestType)) {
+            doGet(URL, out);
+        } else if ("POST".equals(requestType)) {
+            String body = readBody(in, contentLength);
+            doPost(URL, body, out);
+        } else if ("HEAD".equals(requestType)) {
+            doHead(URL, out);
+        } else if ("PUT".equals(requestType)) {
+            String body = readBody(in, contentLength);
+            doPut(URL, body, out);
+        }
+        if ("DELETE".equals(requestType)) {
+            doDelete(URL, out);
+        }
+        out.flush();
+    }
+
     public void doGet(String URL, PrintWriter out) throws IOException {
         System.out.println(URL);
         ArrayList<String> headers = createGetHeaders(URL);
-        for (String header : headers){
+        for (String header : headers) {
             out.println(header);
         }
         if ("/adder.html".equals(URL)) {
@@ -106,7 +116,7 @@ public class WebServer {
             for (String line : postedData) {
                 out.println(line);
             }
-            if (postedData.size() == 0){
+            if (postedData.isEmpty()) {
                 out.println("data empty");
             }
         }
@@ -114,7 +124,6 @@ public class WebServer {
 
     public void doPost(String URL, String body, PrintWriter out) {
         if (URL.equals("/data")) {
-            //break pour chaque \n
             postedData.add("<H1>" + body + "</H1>");
             System.out.println("data added :" + body);
         }
@@ -127,7 +136,6 @@ public class WebServer {
 
     public void doPut(String URL, String body, PrintWriter out) {
         if (URL.equals("/data")) {
-            //break pour chaque \n
             postedData.clear();
             postedData.add("<H1>" + body + "</H1>");
             System.out.println("data replaced :" + body);
@@ -138,9 +146,9 @@ public class WebServer {
         out.println("");
         out.println("status: 200");
     }
-    
+
     public void doDelete(String URL, PrintWriter out) {
-        if (URL.equals("/data")){
+        if (URL.equals("/data")) {
             postedData.clear();
         }
         out.println("HTTP/1.1 200 OK");
@@ -149,15 +157,15 @@ public class WebServer {
         out.println("");
         out.println("status: 200");
     }
-    
+
     public void doHead(String URL, PrintWriter out) {
         ArrayList<String> headers = createGetHeaders(URL);
-        for (String header : headers){
+        for (String header : headers) {
             out.println(header);
         }
     }
-    
-    private ArrayList<String> createGetHeaders(String URL){
+
+    private ArrayList<String> createGetHeaders(String URL) {
         ArrayList<String> headers = new ArrayList<>();
         headers.add("HTTP/1.1 200 OK");
         headers.add("Content-Type: text/html");
@@ -166,16 +174,17 @@ public class WebServer {
         return headers;
     }
 
-    private String readBody(BufferedReader in) throws IOException {
+    private String readBody(BufferedReader in, int bodyLength) throws IOException {
         String body = "";
-        String str = "dummy";
-        //réécrire le while et récupérer autant de charactères que das content length
-        while (!str.equals("")) {
-            str = in.readLine();
-            if (!str.equals("dummy") || !str.equals("")) {
-                body += str + "<br>";
+        int characterAdded = 0;
+        while (characterAdded < bodyLength) {
+            char c = (char) in.read();
+            if (c == '\r' || c == '\n') {
+                body += "<br>";
+            } else {
+                body += c;
             }
-            System.out.println("post body new line : " + str);
+            characterAdded++;
         }
         return body;
     }
