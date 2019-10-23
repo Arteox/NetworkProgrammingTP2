@@ -65,7 +65,7 @@ public class WebServer {
             } else if (str.contains("Content-Length")) {
                 contentLength = Integer.parseInt(str.substring(16));
             }
-            System.out.println("Html new line : " + str);
+            //System.out.println("Html new line : " + str);
         }
         return new Headers(URL, requestType, contentLength);
     }
@@ -217,7 +217,7 @@ public class WebServer {
             }
         } else {
             sendHeaders(URL, out, "404");
-            out.println("<H1>Sorry, this page doesn't exist</H1>");
+            out.println("<H1>404 Sorry, this page doesn't exist</H1>");
         }
     }
 
@@ -226,8 +226,12 @@ public class WebServer {
             if (URL.equals("/data")) {
                 postedData.add("<H1>" + body + "</H1>");
                 System.out.println("data added :" + body);
+                sendHeaders(URL, out, "200");
+            } else {
+                sendHeaders(URL, out, "501");
+                out.println("<H1>501 Service not implemented</H1>");
             }
-            sendHeaders(URL, out, "200");
+
         } catch (Exception e) {
             sendHeaders(URL, out, "500");
             System.err.println("Error: " + e);
@@ -240,9 +244,11 @@ public class WebServer {
             if (URL.equals("/data")) {
                 postedData.clear();
                 postedData.add("<H1>" + body + "</H1>");
-                System.out.println("data replaced :" + body);
+                sendHeaders(URL, out, "200");
+            } else {
+                sendHeaders(URL, out, "501");
+                out.println("<H1>501 Service not implemented</H1>");
             }
-            sendHeaders(URL, out, "200");
         } catch (Exception e) {
             sendHeaders(URL, out, "500");
             System.err.println("Error: " + e);
@@ -253,8 +259,11 @@ public class WebServer {
         try {
             if (URL.equals("/data")) {
                 postedData.clear();
+                sendHeaders(URL, out, "200");
+            } else {
+                sendHeaders(URL, out, "501");
+                out.println("<H1>501 Service not implemented</H1>");
             }
-            sendHeaders(URL, out, "200");
         } catch (Exception e) {
             sendHeaders(URL, out, "500");
             System.err.println("Error: " + e);
@@ -274,11 +283,8 @@ public class WebServer {
         ArrayList<String> headers = new ArrayList<>();
         String statusMessage = createStatusMsg(statusCode);
         headers.add("HTTP/1.1 " + statusCode + " " + statusMessage);
-        //headers.add("Content-Type: video/mp4");
         headers.add("Content-Type: text/html");
-        //headers.add("Content-Length: 995463");
         headers.add("Server: Bot");
-        headers.add("Accept-Ranges: bytes");
         headers.add("");
         return headers;
     }
@@ -291,6 +297,9 @@ public class WebServer {
             statusMessage = "Not Found";
         } else if (statusCode.equals("500")) {
             statusMessage = "Internal Server Error";
+        }
+        else if (statusCode.equals("501")) {
+            statusMessage = "Service not available";
         }
         return statusMessage;
     }
