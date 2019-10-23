@@ -2,7 +2,9 @@
 package http.server;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -115,6 +117,19 @@ public class WebServer {
                 for (String line : Files.readAllLines(Paths.get("doc/shrug.html"), StandardCharsets.UTF_8)) {
                     out.println(line);
                 }
+            } catch (Exception e) {
+                sendHeaders(URL, out, "500");
+                System.err.println("Error: " + e);
+            }
+        } else if (URL.contains("/dynamic")) {
+            try {                
+                String command = "python doc/script.py";
+                Process p = Runtime.getRuntime().exec(command);
+                BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                String ret = in.readLine();
+                
+                sendHeaders(URL, out, "200");
+                out.println("value of script is : " + ret);
             } catch (Exception e) {
                 sendHeaders(URL, out, "500");
                 System.err.println("Error: " + e);
@@ -285,6 +300,7 @@ public class WebServer {
         headers.add("HTTP/1.1 " + statusCode + " " + statusMessage);
         headers.add("Content-Type: text/html");
         headers.add("Server: Bot");
+        headers.add("X-Powered-By: Java");
         headers.add("");
         return headers;
     }
@@ -297,8 +313,7 @@ public class WebServer {
             statusMessage = "Not Found";
         } else if (statusCode.equals("500")) {
             statusMessage = "Internal Server Error";
-        }
-        else if (statusCode.equals("501")) {
+        } else if (statusCode.equals("501")) {
             statusMessage = "Service not available";
         }
         return statusMessage;
