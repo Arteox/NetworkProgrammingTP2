@@ -5,3 +5,5 @@ School project divided into 2 parts :
 2) Implement a static Web Server that implements the HTTP protocol
 
 Language used : Java
+
+Number of persons in the team : 2
