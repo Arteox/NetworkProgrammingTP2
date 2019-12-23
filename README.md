@@ -6,4 +6,4 @@ School project divided into 2 parts :
 
 Language used : Java
 
-Number of persons in the team : 2
+Authors : Gabriel WANTZ, Louis UNG
